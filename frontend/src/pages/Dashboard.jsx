@@ -73,21 +73,21 @@ const Dashboard = () => {
                 title="Question Bank"
                 description="View and manage your saved questions"
                 buttonText="View Bank"
-                onClick={() => alert('Coming soon!')}
+                onClick={() => navigate('/question-bank')}
               />
               <DashboardCard
                 emoji="🎯"
                 title="Take Quiz"
-                description="Test your knowledge with generated quizzes"
-                buttonText="Start Quiz"
-                onClick={() => alert('Coming soon!')}
+                description="Random quiz or generate from text instantly"
+                buttonText="Create Quiz"
+                onClick={() => navigate('/create-quiz')}
               />
               <DashboardCard
                 emoji="📊"
                 title="My Progress"
                 description="Track your learning progress and scores"
                 buttonText="View Stats"
-                onClick={() => alert('Coming soon!')}
+                onClick={() => navigate('/my-progress')}
               />
             </div>
           </div>

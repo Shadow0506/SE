@@ -1,5 +1,16 @@
 # AI Reverse Learning Exam Prep Tool
 
+## 🎉 NEW FEATURES IMPLEMENTED!
+
+✅ **Question Bank** - Organize and manage all your saved questions  
+✅ **Take Quiz** - Interactive quiz experience with instant feedback  
+✅ **My Progress** - Track your performance and learning analytics  
+✅ **View Saved Questions** - Quick access from question generation  
+
+👉 **See [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) for complete details!**  
+
+---
+
 ## Backend Setup
 
 1. Navigate to backend directory:
@@ -46,7 +57,7 @@ The frontend will run on `http://localhost:3000`
 ## Backend Architecture
 
 ### Modular Structure:
-- **Models** (`models/`): Mongoose schemas for Student, Faculty, and Admin
+- **Models** (`models/`): Mongoose schemas for Student, Faculty, Admin, Question, and Quiz
 - **Controllers** (`controllers/`): Business logic separated from routes
 - **Routes** (`routes/`): API endpoint definitions
 - **Config** (`config/`): Database connection configuration

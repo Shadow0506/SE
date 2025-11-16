@@ -27,6 +27,26 @@ const studentSchema = new mongoose.Schema({
   lastLogin: {
     type: Date,
     default: null
+  },
+  // Adaptive difficulty tracking
+  adaptiveDifficulty: {
+    currentLevel: {
+      type: String,
+      enum: ['easy', 'medium', 'hard'],
+      default: 'medium'
+    },
+    consecutiveCorrect: {
+      type: Number,
+      default: 0
+    },
+    consecutiveIncorrect: {
+      type: Number,
+      default: 0
+    },
+    lastUpdated: {
+      type: Date,
+      default: Date.now
+    }
   }
 }, {
   timestamps: true

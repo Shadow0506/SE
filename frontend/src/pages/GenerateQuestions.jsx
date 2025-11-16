@@ -161,14 +161,24 @@ const GenerateQuestions = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex justify-between items-center">
-          <h1 className="text-xl sm:text-2xl font-bold">Generate Questions</h1>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="bg-white/20 hover:bg-white hover:text-primary-500 border-2 border-white px-4 sm:px-6 py-2 rounded-lg font-semibold transition-all duration-200"
-          >
-            Back to Dashboard
-          </button>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <h1 className="text-xl sm:text-2xl font-bold">Generate Questions</h1>
+            <div className="flex gap-3">
+              <button
+                onClick={() => navigate('/question-bank')}
+                className="bg-white/20 hover:bg-white hover:text-primary-500 border-2 border-white px-4 py-2 rounded-lg font-semibold transition-all duration-200"
+              >
+                📚 View Saved Questions
+              </button>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="bg-white/20 hover:bg-white hover:text-primary-500 border-2 border-white px-4 py-2 rounded-lg font-semibold transition-all duration-200"
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 

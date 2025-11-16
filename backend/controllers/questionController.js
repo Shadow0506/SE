@@ -239,9 +239,188 @@ const extractConcepts = async (req, res) => {
   }
 };
 
+// Delete a question
+const deleteQuestion = async (req, res) => {
+  try {
+    const { questionId } = req.params;
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const question = await Question.findById(questionId);
+
+    if (!question) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+
+    // Verify ownership
+    if (question.userId.toString() !== userId) {
+      return res.status(403).json({ error: 'Unauthorized to delete this question' });
+    }
+
+    await Question.findByIdAndDelete(questionId);
+
+    res.json({
+      success: true,
+      message: 'Question deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Delete question error:', error);
+    res.status(500).json({ 
+      error: 'Failed to delete question',
+      message: error.message 
+    });
+  }
+};
+
+// Update/Edit a question
+const updateQuestion = async (req, res) => {
+  try {
+    const { questionId } = req.params;
+    const { userId, updates } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    if (!updates) {
+      return res.status(400).json({ error: 'Updates are required' });
+    }
+
+    const question = await Question.findById(questionId);
+
+    if (!question) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+
+    // Verify ownership
+    if (question.userId.toString() !== userId) {
+      return res.status(403).json({ error: 'Unauthorized to update this question' });
+    }
+
+    // Update allowed fields
+    const allowedUpdates = [
+      'question', 'options', 'correctAnswer', 'hint', 
+      'explanation', 'difficulty', 'subject', 'tags', 'type'
+    ];
+
+    Object.keys(updates).forEach(key => {
+      if (allowedUpdates.includes(key)) {
+        question[key] = updates[key];
+      }
+    });
+
+    // Mark as edited
+    question.isEdited = true;
+
+    await question.save();
+
+    res.json({
+      success: true,
+      message: 'Question updated successfully',
+      question
+    });
+
+  } catch (error) {
+    console.error('Update question error:', error);
+    res.status(500).json({ 
+      error: 'Failed to update question',
+      message: error.message 
+    });
+  }
+};
+
+// Get questions with filters
+const getFilteredQuestions = async (req, res) => {
+  try {
+    const { userId, userType, type, difficulty, subject, tags, search } = req.query;
+
+    if (!userId || !userType) {
+      return res.status(400).json({ error: 'User ID and type are required' });
+    }
+
+    // Determine the user model
+    let userModel;
+    switch (userType.toLowerCase()) {
+      case 'student':
+        userModel = 'Student';
+        break;
+      case 'faculty':
+        userModel = 'Faculty';
+        break;
+      case 'admin':
+        userModel = 'Admin';
+        break;
+      default:
+        return res.status(400).json({ error: 'Invalid user type' });
+    }
+
+    // Build filter
+    const filter = { userId, userModel };
+    
+    if (type && type !== 'all') {
+      filter.type = type;
+    }
+    
+    if (difficulty && difficulty !== 'all') {
+      filter.difficulty = difficulty;
+    }
+    
+    if (subject) {
+      filter.subject = subject;
+    }
+    
+    if (tags) {
+      const tagArray = tags.split(',').map(t => t.trim()).filter(t => t);
+      if (tagArray.length > 0) {
+        filter.tags = { $in: tagArray };
+      }
+    }
+    
+    if (search) {
+      filter.$or = [
+        { question: { $regex: search, $options: 'i' } },
+        { sourceText: { $regex: search, $options: 'i' } },
+        { keyConcepts: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const questions = await Question.find(filter).sort({ createdAt: -1 });
+
+    // Get unique subjects and tags for filters
+    const allQuestions = await Question.find({ userId, userModel });
+    const subjects = [...new Set(allQuestions.map(q => q.subject).filter(s => s))];
+    const allTags = [...new Set(allQuestions.flatMap(q => q.tags))];
+
+    res.json({
+      success: true,
+      count: questions.length,
+      questions,
+      filters: {
+        subjects,
+        tags: allTags
+      }
+    });
+
+  } catch (error) {
+    console.error('Get filtered questions error:', error);
+    res.status(500).json({ 
+      error: 'Failed to retrieve questions',
+      message: error.message 
+    });
+  }
+};
+
 module.exports = {
   generateQuestionsFromAnswer,
   saveQuestions,
   getUserQuestions,
-  extractConcepts
+  extractConcepts,
+  deleteQuestion,
+  updateQuestion,
+  getFilteredQuestions
 };
+
