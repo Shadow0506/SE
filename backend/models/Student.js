@@ -28,6 +28,26 @@ const studentSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  // Subscription details
+  subscriptionPlan: {
+    type: String,
+    enum: ['free', 'student', 'educator', 'enterprise'],
+    default: 'free'
+  },
+  subscriptionStatus: {
+    type: String,
+    enum: ['active', 'inactive', 'cancelled'],
+    default: 'active'
+  },
+  subscriptionBillingCycle: {
+    type: String,
+    enum: ['monthly', 'yearly'],
+    default: 'monthly'
+  },
+  subscriptionStartDate: {
+    type: Date,
+    default: null
+  },
   // Adaptive difficulty tracking
   adaptiveDifficulty: {
     currentLevel: {
@@ -46,6 +66,40 @@ const studentSchema = new mongoose.Schema({
     lastUpdated: {
       type: Date,
       default: Date.now
+    }
+  },
+  // Storage quota and rate limiting (for students - limited)
+  quota: {
+    // Storage quota in bytes (10 MB for students)
+    storageLimit: {
+      type: Number,
+      default: 10 * 1024 * 1024 // 10 MB
+    },
+    storageUsed: {
+      type: Number,
+      default: 0
+    },
+    // Rate limiting for question generation
+    generationsToday: {
+      type: Number,
+      default: 0
+    },
+    generationsLimit: {
+      type: Number,
+      default: 20 // 20 generations per day for students
+    },
+    lastResetDate: {
+      type: Date,
+      default: Date.now
+    },
+    // File upload limits
+    uploadsToday: {
+      type: Number,
+      default: 0
+    },
+    uploadsLimit: {
+      type: Number,
+      default: 5 // 5 file uploads per day for students
     }
   }
 }, {

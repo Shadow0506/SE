@@ -69,7 +69,14 @@ const Dashboard = () => {
                 onClick={() => navigate('/generate-questions')}
               />
               <DashboardCard
-                emoji="📚"
+                emoji="�"
+                title="Upload File"
+                description="Upload PDF/DOCX/TXT to generate questions"
+                buttonText="Upload"
+                onClick={() => navigate('/file-upload')}
+              />
+              <DashboardCard
+                emoji="�📚"
                 title="Question Bank"
                 description="View and manage your saved questions"
                 buttonText="View Bank"
@@ -88,6 +95,13 @@ const Dashboard = () => {
                 description="Track your learning progress and scores"
                 buttonText="View Stats"
                 onClick={() => navigate('/my-progress')}
+              />
+              <DashboardCard
+                emoji="💎"
+                title="Upgrade Plan"
+                description="Unlock more features with premium plans"
+                buttonText="View Pricing"
+                onClick={() => navigate('/pricing')}
               />
             </div>
           </div>
@@ -108,23 +122,23 @@ const Dashboard = () => {
               <DashboardCard
                 emoji="📤"
                 title="Bulk Upload"
-                description="Upload documents to generate question banks"
+                description="Upload multiple documents at once"
                 buttonText="Upload"
-                onClick={() => alert('Coming soon!')}
+                onClick={() => navigate('/bulk-upload')}
               />
               <DashboardCard
-                emoji="🗂️"
-                title="Manage Banks"
-                description="Organize and share question banks"
+                emoji="�"
+                title="Question Bank"
+                description="Manage your question banks"
                 buttonText="Manage"
-                onClick={() => alert('Coming soon!')}
+                onClick={() => navigate('/question-bank')}
               />
               <DashboardCard
-                emoji="👥"
-                title="Student Analytics"
-                description="View student performance and progress"
-                buttonText="View Analytics"
-                onClick={() => alert('Coming soon!')}
+                emoji=""
+                title="Upgrade Plan"
+                description="Get higher quotas and premium features"
+                buttonText="View Pricing"
+                onClick={() => navigate('/pricing')}
               />
             </div>
           </div>
@@ -147,7 +161,7 @@ const Dashboard = () => {
                 title="Subscriptions"
                 description="View and manage user subscriptions"
                 buttonText="View Plans"
-                onClick={() => alert('Coming soon!')}
+                onClick={() => navigate('/pricing')}
               />
               <DashboardCard
                 emoji="📊"

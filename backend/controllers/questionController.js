@@ -1,5 +1,47 @@
 const { generateQuestions, extractKeyConcepts } = require('../services/groqService');
 const Question = require('../models/Question');
+const Student = require('../models/Student');
+const Faculty = require('../models/Faculty');
+const Admin = require('../models/Admin');
+
+// Helper function to get user model
+const getUserModel = (userType) => {
+  switch (userType.toLowerCase()) {
+    case 'student':
+      return Student;
+    case 'faculty':
+      return Faculty;
+    case 'admin':
+      return Admin;
+    default:
+      return null;
+  }
+};
+
+// Helper function to reset daily counters if needed
+const resetDailyCountersIfNeeded = async (user) => {
+  if (!user.quota) {
+    user.quota = {
+      storageLimit: user.userType === 'faculty' ? 100 * 1024 * 1024 : 10 * 1024 * 1024,
+      storageUsed: 0,
+      generationsToday: 0,
+      generationsLimit: user.userType === 'faculty' ? 100 : 20,
+      uploadsToday: 0,
+      uploadsLimit: user.userType === 'faculty' ? 50 : 5,
+      lastResetDate: new Date()
+    };
+  }
+
+  const today = new Date();
+  const lastReset = new Date(user.quota.lastResetDate);
+  
+  if (today.toDateString() !== lastReset.toDateString()) {
+    user.quota.generationsToday = 0;
+    user.quota.uploadsToday = 0;
+    user.quota.lastResetDate = today;
+    await user.save();
+  }
+};
 
 // Generate questions from answer text
 const generateQuestionsFromAnswer = async (req, res) => {
@@ -10,15 +52,38 @@ const generateQuestionsFromAnswer = async (req, res) => {
       questionCount = 5,
       questionTypes = ['mcq', 'short', 'truefalse', 'application'],
       subject = '',
-      tags = []
+      tags = [],
+      userId,
+      userType
     } = req.body;
-
-    // Get user info from request (assuming it's attached by auth middleware or sent in body)
-    const { userId, userType } = req.body;
 
     // Validate input
     if (!answerText || answerText.trim().length === 0) {
       return res.status(400).json({ error: 'Answer text is required' });
+    }
+
+    // Check quota if user info provided
+    if (userId && userType) {
+      const UserModel = getUserModel(userType);
+      if (UserModel) {
+        const user = await UserModel.findById(userId);
+        if (user) {
+          await resetDailyCountersIfNeeded(user);
+          
+          if (user.quota.generationsToday >= user.quota.generationsLimit) {
+            return res.status(429).json({ 
+              error: 'Daily generation limit reached',
+              limit: user.quota.generationsLimit,
+              generationsToday: user.quota.generationsToday,
+              message: `You have reached your daily generation limit of ${user.quota.generationsLimit}. Please try again tomorrow.`
+            });
+          }
+
+          // Increment generation counter
+          user.quota.generationsToday += 1;
+          await user.save();
+        }
+      }
     }
 
     // Character limit validation (30,000 chars as per SRS)
@@ -129,10 +194,21 @@ const saveQuestions = async (req, res) => {
     // Save each question to database
     const savedQuestions = [];
     for (const q of questions) {
+      // Get sourceText from question or fallback to request body
+      const questionSourceText = q.sourceText || sourceText || '';
+      
+      // Validate that sourceText is not empty
+      if (!questionSourceText || questionSourceText.trim() === '') {
+        return res.status(400).json({ 
+          error: 'Source text is required for each question',
+          question: q.question 
+        });
+      }
+      
       const questionDoc = new Question({
         userId,
         userModel,
-        sourceText: sourceText || '',
+        sourceText: questionSourceText,
         type: q.type,
         difficulty: q.difficulty,
         question: q.question,

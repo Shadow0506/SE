@@ -27,6 +27,60 @@ const facultySchema = new mongoose.Schema({
   lastLogin: {
     type: Date,
     default: null
+  },
+  // Subscription details
+  subscriptionPlan: {
+    type: String,
+    enum: ['free', 'student', 'educator', 'enterprise'],
+    default: 'free'
+  },
+  subscriptionStatus: {
+    type: String,
+    enum: ['active', 'inactive', 'cancelled'],
+    default: 'active'
+  },
+  subscriptionBillingCycle: {
+    type: String,
+    enum: ['monthly', 'yearly'],
+    default: 'monthly'
+  },
+  subscriptionStartDate: {
+    type: Date,
+    default: null
+  },
+  // Storage quota and rate limiting (for faculty - more generous)
+  quota: {
+    // Storage quota in bytes (100 MB for faculty - 10x students)
+    storageLimit: {
+      type: Number,
+      default: 100 * 1024 * 1024 // 100 MB
+    },
+    storageUsed: {
+      type: Number,
+      default: 0
+    },
+    // Rate limiting for question generation
+    generationsToday: {
+      type: Number,
+      default: 0
+    },
+    generationsLimit: {
+      type: Number,
+      default: 100 // 100 generations per day for faculty
+    },
+    lastResetDate: {
+      type: Date,
+      default: Date.now
+    },
+    // File upload limits
+    uploadsToday: {
+      type: Number,
+      default: 0
+    },
+    uploadsLimit: {
+      type: Number,
+      default: 50 // 50 file uploads per day for faculty (bulk upload)
+    }
   }
 }, {
   timestamps: true

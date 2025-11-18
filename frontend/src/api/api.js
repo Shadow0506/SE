@@ -19,6 +19,11 @@ export const authAPI = {
     const response = await api.post('/auth/login', credentials);
     return response.data;
   },
+
+  updateSubscription: async (data) => {
+    const response = await api.put('/auth/subscription', data);
+    return response.data;
+  },
 };
 
 export const questionAPI = {
@@ -142,6 +147,58 @@ export const exportAPI = {
     }, {
       responseType: 'blob'
     });
+    return response.data;
+  }
+};
+
+export const uploadAPI = {
+  // Single file upload
+  uploadFile: async (formData) => {
+    const response = await api.post('/upload/single', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  },
+
+  // Bulk file upload (faculty only)
+  uploadBulkFiles: async (formData) => {
+    const response = await api.post('/upload/bulk', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  },
+
+  // Get user's uploaded documents
+  getUserDocuments: async (userId, userType) => {
+    const response = await api.get('/upload/documents', {
+      params: { userId, userType }
+    });
+    return response.data;
+  },
+
+  // Delete uploaded document
+  deleteDocument: async (documentId, userId, userType) => {
+    const response = await api.delete(`/upload/documents/${documentId}`, {
+      data: { userId, userType }
+    });
+    return response.data;
+  },
+
+  // Get user's quota information
+  getUserQuota: async (userId, userType) => {
+    const response = await api.get('/upload/quota', {
+      params: { userId, userType }
+    });
+    return response.data;
+  },
+
+  // Generate questions from uploaded document
+  generateFromDocument: async (documentId, data) => {
+    const response = await api.post(`/upload/documents/${documentId}/generate`, data);
     return response.data;
   }
 };

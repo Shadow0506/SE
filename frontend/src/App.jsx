@@ -8,6 +8,9 @@ import QuestionBank from './pages/QuestionBank.jsx';
 import CreateQuiz from './pages/CreateQuiz.jsx';
 import TakeQuiz from './pages/TakeQuiz.jsx';
 import MyProgress from './pages/MyProgress.jsx';
+import FileUpload from './pages/FileUpload.jsx';
+import BulkUpload from './pages/BulkUpload.jsx';
+import Pricing from './pages/Pricing.jsx';
 
 function App() {
   return (
@@ -22,6 +25,9 @@ function App() {
         <Route path="/create-quiz" element={<CreateQuiz />} />
         <Route path="/take-quiz" element={<TakeQuiz />} />
         <Route path="/my-progress" element={<MyProgress />} />
+        <Route path="/file-upload" element={<FileUpload />} />
+        <Route path="/bulk-upload" element={<BulkUpload />} />
+        <Route path="/pricing" element={<Pricing />} />
       </Routes>
     </Router>
   );

@@ -119,7 +119,11 @@ const login = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        userType
+        userType,
+        subscriptionPlan: user.subscriptionPlan || 'free',
+        subscriptionStatus: user.subscriptionStatus || 'active',
+        subscriptionBillingCycle: user.subscriptionBillingCycle || 'monthly',
+        quota: user.quota
       }
     });
   } catch (error) {
@@ -128,7 +132,93 @@ const login = async (req, res) => {
   }
 };
 
+// Update subscription controller
+const updateSubscription = async (req, res) => {
+  try {
+    const { userId, userType, subscriptionPlan, billingCycle } = req.body;
+
+    // Validate input
+    if (!userId || !userType || !subscriptionPlan) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Validate userType
+    const validUserTypes = ['student', 'faculty', 'admin'];
+    if (!validUserTypes.includes(userType)) {
+      return res.status(400).json({ error: 'Invalid user type' });
+    }
+
+    // Validate subscription plan
+    const validPlans = ['free', 'student', 'educator', 'enterprise'];
+    if (!validPlans.includes(subscriptionPlan)) {
+      return res.status(400).json({ error: 'Invalid subscription plan' });
+    }
+
+    // Get the appropriate model
+    const UserModel = getUserModel(userType);
+
+    // Find user
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Update subscription details
+    user.subscriptionPlan = subscriptionPlan;
+    user.subscriptionStatus = 'active';
+    user.subscriptionBillingCycle = billingCycle;
+    user.subscriptionStartDate = new Date();
+
+    // Update quotas based on plan
+    if (subscriptionPlan === 'student') {
+      user.quota.generationsLimit = 100;
+      user.quota.uploadsLimit = 20;
+      user.quota.storageLimit = 50 * 1024 * 1024; // 50 MB
+    } else if (subscriptionPlan === 'educator') {
+      user.quota.generationsLimit = 999999; // Unlimited
+      user.quota.uploadsLimit = 999999; // Unlimited
+      user.quota.storageLimit = 500 * 1024 * 1024; // 500 MB
+    } else if (subscriptionPlan === 'enterprise') {
+      user.quota.generationsLimit = 999999; // Unlimited
+      user.quota.uploadsLimit = 999999; // Unlimited
+      user.quota.storageLimit = 999999 * 1024 * 1024; // Unlimited
+    } else if (subscriptionPlan === 'free') {
+      // Reset to free tier limits
+      if (userType === 'student') {
+        user.quota.generationsLimit = 20;
+        user.quota.uploadsLimit = 5;
+        user.quota.storageLimit = 10 * 1024 * 1024; // 10 MB
+      } else if (userType === 'faculty') {
+        user.quota.generationsLimit = 100;
+        user.quota.uploadsLimit = 50;
+        user.quota.storageLimit = 100 * 1024 * 1024; // 100 MB
+      }
+    }
+
+    await user.save();
+
+    // Return updated user data
+    res.json({
+      message: 'Subscription updated successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        userType,
+        subscriptionPlan: user.subscriptionPlan,
+        subscriptionStatus: user.subscriptionStatus,
+        subscriptionBillingCycle: user.subscriptionBillingCycle,
+        quota: user.quota
+      }
+    });
+  } catch (error) {
+    console.error('Update subscription error:', error);
+    res.status(500).json({ error: 'Server error updating subscription' });
+  }
+};
+
 module.exports = {
   signup,
-  login
+  login,
+  updateSubscription
 };

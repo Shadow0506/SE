@@ -20,6 +20,7 @@ const GenerateQuestions = () => {
   const [loading, setLoading] = useState(false);
   const [extractingConcepts, setExtractingConcepts] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [keyConcepts, setKeyConcepts] = useState([]);
   const [generatedQuestions, setGeneratedQuestions] = useState([]);
   const [showResults, setShowResults] = useState(false);
@@ -56,13 +57,26 @@ const GenerateQuestions = () => {
 
     setExtractingConcepts(true);
     setError('');
+    setSuccessMessage('');
+    setKeyConcepts([]); // Clear previous concepts
 
     try {
       const response = await questionAPI.extractConcepts(answerText);
-      setKeyConcepts(response.concepts || []);
+      
+      if (response.concepts && response.concepts.length > 0) {
+        setKeyConcepts(response.concepts);
+        setSuccessMessage(`✓ Successfully extracted ${response.concepts.length} key concept${response.concepts.length > 1 ? 's' : ''}`);
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccessMessage(''), 3000);
+      } else {
+        setError('No concepts could be extracted. Try adding more detailed text.');
+        setKeyConcepts([]);
+      }
     } catch (err) {
       console.error('Concept extraction error:', err);
-      setError('Failed to extract concepts');
+      const errorMsg = err.response?.data?.message || err.response?.data?.error || 'Failed to extract concepts. Please try again.';
+      setError(errorMsg);
+      setKeyConcepts([]);
     } finally {
       setExtractingConcepts(false);
     }
@@ -195,6 +209,12 @@ const GenerateQuestions = () => {
                 </div>
               )}
 
+              {successMessage && (
+                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4">
+                  {successMessage}
+                </div>
+              )}
+
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Answer Text
@@ -213,9 +233,19 @@ const GenerateQuestions = () => {
                   <button
                     onClick={handleExtractConcepts}
                     disabled={extractingConcepts || !answerText.trim()}
-                    className="text-sm text-primary-500 hover:text-primary-600 font-medium disabled:opacity-50"
+                    className="text-sm text-primary-500 hover:text-primary-600 font-medium disabled:opacity-50 flex items-center gap-2 transition-all"
                   >
-                    {extractingConcepts ? 'Extracting...' : '🔍 Extract Key Concepts'}
+                    {extractingConcepts ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-500"></div>
+                        <span>Extracting concepts...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>🔍</span>
+                        <span>Extract Key Concepts</span>
+                      </>
+                    )}
                   </button>
                 </div>
                 {charPercentage > 0 && (

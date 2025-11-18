@@ -30,6 +30,12 @@ Requirements:
 - Provide hints for each question
 - Extract and highlight key concepts from the answer
 
+CRITICAL: The "correctAnswer" field MUST contain:
+- For MCQ: The letter only (e.g., "A" or "B" or "C" or "D")
+- For Short Answer: A complete, detailed answer text (2-5 sentences)
+- For True/False: Either "True" or "False"
+- For Application: A comprehensive answer with explanation (3-6 sentences)
+
 Return the response in strict JSON format with this structure:
 {
   "keyConcepts": ["concept1", "concept2", ...],
@@ -40,7 +46,7 @@ Return the response in strict JSON format with this structure:
       "difficulty": "${difficulty}",
       "question": "question text",
       "options": ["A) option1", "B) option2", "C) option3", "D) option4"], // only for MCQ
-      "correctAnswer": "answer text or option letter",
+      "correctAnswer": "MUST be a letter (A/B/C/D) for MCQ, or complete answer text for other types",
       "hint": "helpful hint",
       "explanation": "why this is the correct answer"
     }
@@ -96,13 +102,22 @@ Remember to return ONLY valid JSON with no additional text.`;
 };
 
 // Extract key concepts from text
+// Extract key concepts from text
 const extractKeyConcepts = async (text) => {
   try {
     const completion = await groq.chat.completions.create({
       messages: [
         {
           role: 'system',
-          content: 'Extract the main concepts, keywords, and important terms from the given text. Return them as a JSON array of strings.'
+          content: `You are an expert at analyzing educational content and extracting key concepts.
+          
+Extract the main concepts, keywords, and important terms from the given text.
+Return your response in this exact JSON format:
+{
+  "concepts": ["concept1", "concept2", "concept3", ...]
+}
+
+Keep concepts concise (1-4 words each) and limit to the 10 most important concepts.`
         },
         {
           role: 'user',
@@ -115,8 +130,36 @@ const extractKeyConcepts = async (text) => {
       response_format: { type: 'json_object' }
     });
 
-    const response = JSON.parse(completion.choices[0]?.message?.content || '{"concepts": []}');
-    return response.concepts || [];
+    const responseContent = completion.choices[0]?.message?.content;
+    
+    if (!responseContent) {
+      console.error('No response from Groq API for concept extraction');
+      return [];
+    }
+
+    const response = JSON.parse(responseContent);
+    
+    // Handle both {"concepts": [...]} and direct array formats
+    if (Array.isArray(response)) {
+      return response;
+    } else if (response.concepts && Array.isArray(response.concepts)) {
+      return response.concepts;
+    } else if (response.keywords && Array.isArray(response.keywords)) {
+      return response.keywords;
+    } else if (response.terms && Array.isArray(response.terms)) {
+      return response.terms;
+    }
+    
+    // If we can't find concepts in expected format, try to extract from any array in response
+    for (const key in response) {
+      if (Array.isArray(response[key]) && response[key].length > 0) {
+        return response[key];
+      }
+    }
+    
+    console.warn('Unexpected response format from concept extraction:', response);
+    return [];
+
   } catch (error) {
     console.error('Concept extraction error:', error);
     return [];
