@@ -130,9 +130,10 @@ export const quizAPI = {
 };
 
 export const exportAPI = {
-  exportPDF: async (questionIds, options = {}) => {
+  exportPDF: async (questionIds, userId, options = {}) => {
     const response = await api.post('/export/pdf', {
       questionIds,
+      userId,
       ...options
     }, {
       responseType: 'blob'
@@ -140,9 +141,10 @@ export const exportAPI = {
     return response.data;
   },
 
-  exportDOCX: async (questionIds, options = {}) => {
+  exportDOCX: async (questionIds, userId, options = {}) => {
     const response = await api.post('/export/docx', {
       questionIds,
+      userId,
       ...options
     }, {
       responseType: 'blob'

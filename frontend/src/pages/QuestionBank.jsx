@@ -175,9 +175,9 @@ const QuestionBank = () => {
       let blob;
       
       if (format === 'pdf') {
-        blob = await exportAPI.exportPDF(selectedQuestions, exportOptions);
+        blob = await exportAPI.exportPDF(selectedQuestions, user.id, exportOptions);
       } else {
-        blob = await exportAPI.exportDOCX(selectedQuestions, exportOptions);
+        blob = await exportAPI.exportDOCX(selectedQuestions, user.id, exportOptions);
       }
 
       // Create download link

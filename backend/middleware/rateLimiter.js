@@ -1,9 +1,12 @@
 const rateLimit = require('express-rate-limit');
 
-// General API rate limiter - 100 requests per 15 minutes
+// Check if in test mode
+const isTestMode = process.env.NODE_ENV === 'test';
+
+// General API rate limiter - 100 requests per 15 minutes (10000 in test)
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  max: isTestMode ? 10000 : 100,
   message: {
     error: 'Too many requests',
     message: 'You have exceeded the rate limit. Please try again later.'
@@ -12,10 +15,10 @@ const generalLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Strict limiter for question generation - 30 requests per hour
+// Strict limiter for question generation - 30 requests per hour (1000 in test)
 const questionGenerationLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 30,
+  max: isTestMode ? 1000 : 30,
   message: {
     error: 'Question generation rate limit exceeded',
     message: 'You have exceeded the hourly limit for question generation. Please try again later.'
@@ -25,10 +28,10 @@ const questionGenerationLimiter = rateLimit({
   skipSuccessfulRequests: false
 });
 
-// Upload rate limiter - 20 uploads per hour
+// Upload rate limiter - 20 uploads per hour (1000 in test)
 const uploadLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 20,
+  max: isTestMode ? 1000 : 20,
   message: {
     error: 'Upload rate limit exceeded',
     message: 'You have exceeded the hourly upload limit. Please try again later.'
@@ -37,10 +40,10 @@ const uploadLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Login rate limiter - 5 attempts per 15 minutes
+// Login rate limiter - 5 attempts per 15 minutes (1000 in test)
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5,
+  max: isTestMode ? 1000 : 5,
   message: {
     error: 'Too many login attempts',
     message: 'Too many failed login attempts. Please try again after 15 minutes.'
