@@ -33,6 +33,9 @@ module.exports = {
   // Timeout for all tests
   testTimeout: 30000,
   
+  // Run tests in sequence to avoid connection issues
+  maxWorkers: 1,
+  
   // Verbose output
   verbose: true,
   
@@ -49,5 +52,11 @@ module.exports = {
   clearMocks: true,
   
   // Restore mocks between tests
-  restoreMocks: true
+  restoreMocks: true,
+  
+  // Force exit after tests complete
+  forceExit: true,
+  
+  // Detect open handles
+  detectOpenHandles: false
 };

@@ -87,6 +87,11 @@ const login = async (req, res) => {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
+    // Validate input types to prevent NoSQL injection
+    if (typeof email !== 'string' || typeof password !== 'string' || typeof userType !== 'string') {
+      return res.status(400).json({ error: 'Invalid input format' });
+    }
+
     // Validate userType
     const validUserTypes = ['student', 'faculty', 'admin'];
     if (!validUserTypes.includes(userType)) {
@@ -102,8 +107,8 @@ const login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    // Verify password (ensure both are strings)
+    const isPasswordValid = await bcrypt.compare(String(password), String(user.password));
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
